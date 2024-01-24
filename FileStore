@@ -1,0 +1,48 @@
+import shutil
+import os
+from datetime import datetime
+
+class BackupLogger:
+    def __init__(self, log_file="backup_log.txt"):
+        self.log_file = log_file
+
+    def log(self, message):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = f"[{timestamp}] {message}\n"
+        with open(self.log_file, "a") as log_file:
+            log_file.write(log_entry)
+
+class BackupManager:
+    def __init__(self, source_folder, destination_folder):
+        self.source_folder = source_folder
+        self.destination_folder = destination_folder
+        self.logger = BackupLogger()
+
+    def create_backup_folder(self):
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        backup_folder = os.path.join(self.destination_folder, f"backup_{timestamp}")
+
+        os.makedirs(backup_folder)
+        return backup_folder
+
+    def backup_files(self):
+        try:
+            backup_folder = self.create_backup_folder()
+
+            for filename in os.listdir(self.source_folder):
+                source_path = os.path.join(self.source_folder, filename)
+                dest_path = os.path.join(backup_folder, filename)
+
+                shutil.copy2(source_path, dest_path)
+
+            self.logger.log(f"Backup successful. Files are saved in: {backup_folder}")
+        except Exception as e:
+            self.logger.log(f"Error during backup: {e}")
+
+# Example usage
+if __name__ == "__main__":
+    source_folder = "/path/to/source/folder"
+    destination_folder = "/path/to/backup/folder"
+
+    backup_manager = BackupManager(source_folder, destination_folder)
+    backup_manager.backup_files()
